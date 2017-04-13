@@ -2,25 +2,48 @@
 # 
 # tournament.py -- implementation of a Swiss-system tournament
 #
-
 import psycopg2
-
+import bleach
 
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
     return psycopg2.connect("dbname=tournament")
 
 
+
+
 def deleteMatches():
     """Remove all the match records from the database."""
+    con = connect()
+    cursor = con.cursor()
+    query = "DELETE FROM match"
+    cursor.execute(query)
+    con.commit()
+    con.close()
+
 
 
 def deletePlayers():
     """Remove all the player records from the database."""
+    con = connect()
+    cursor = con.cursor()
+    query = "DELETE FROM player"
+    cursor.execute(query)
+    con.commit()
+    con.close()
 
 
 def countPlayers():
     """Returns the number of players currently registered."""
+    con = connect()
+    cursor = con.cursor()
+    query = "SELECT COUNT(*) FROM player"
+    cursor.execute(query)
+
+    count = cursor.fetchone()[0]
+    con.close()
+
+    return count
 
 
 def registerPlayer(name):
@@ -33,13 +56,21 @@ def registerPlayer(name):
       name: the player's full name (need not be unique).
     """
 
+    con = connect()
+    cursor = con.cursor()
+
+    bleached_name = bleach.clean(name, strip=True)
+
+    cursor.execute("insert into player (player_name) values (%s)", (bleached_name,))
+
+    con.commit()
+    con.close()
+
 
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
-
     The first entry in the list should be the player in first place, or a player
     tied for first place if there is currently a tie.
-
     Returns:
       A list of tuples, each of which contains (id, name, wins, matches):
         id: the player's unique id (assigned by the database)
@@ -47,16 +78,32 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
+    con = connect()
+    cursor = con.cursor()
+    query = ("SELECT * FROM standings;")
+    cursor.execute(query)
+
+    results = cursor.fetchall()
+
+    con.close()
+    return results
 
 
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
-
     Args:
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
- 
+    con = connect()
+    cursor = con.cursor()
+
+    query = ("INSERT INTO match (winner, loser) VALUES (%s, %s)", (winner, loser,))
+    cursor.execute("INSERT INTO match (winner, loser) VALUES (%s, %s)", (winner, loser,))
+    con.commit()
+
+    con.close()
+
  
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.

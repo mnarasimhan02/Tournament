@@ -6,4 +6,20 @@
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
 
+CREATE DATABASE tournament ();
 
+CREATE TABLE player(
+  player_id serial PRIMARY KEY,
+  player_name text
+);
+
+CREATE TABLE match(
+  game_id SERIAL PRIMARY KEY,
+  player_1 INTEGER FOREIGN KEY(player),
+  player_2 INTEGER,
+  winner INTEGER,
+  FOREIGN KEY(player_1) REFERENCES player,
+  FOREIGN KEY(player_2) REFERENCES player,
+  FOREIGN KEY(winner) REFERENCES player
+
+);

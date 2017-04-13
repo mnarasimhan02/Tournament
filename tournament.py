@@ -1,16 +1,9 @@
-#!/usr/bin/env python
-# 
-# tournament.py -- implementation of a Swiss-system tournament
-#
 import psycopg2
 import bleach
 
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
     return psycopg2.connect("dbname=tournament")
-
-
-
 
 def deleteMatches():
     """Remove all the match records from the database."""
@@ -20,7 +13,6 @@ def deleteMatches():
     cursor.execute(query)
     con.commit()
     con.close()
-
 
 
 def deletePlayers():
@@ -39,10 +31,8 @@ def countPlayers():
     cursor = con.cursor()
     query = "SELECT COUNT(*) FROM player"
     cursor.execute(query)
-
     count = cursor.fetchone()[0]
     con.close()
-
     return count
 
 
@@ -58,11 +48,8 @@ def registerPlayer(name):
 
     con = connect()
     cursor = con.cursor()
-
     bleached_name = bleach.clean(name, strip=True)
-
     cursor.execute("insert into player (player_name) values (%s)", (bleached_name,))
-
     con.commit()
     con.close()
 
@@ -82,9 +69,7 @@ def playerStandings():
     cursor = con.cursor()
     query = ("SELECT * FROM standings;")
     cursor.execute(query)
-
     results = cursor.fetchall()
-
     con.close()
     return results
 
@@ -97,11 +82,8 @@ def reportMatch(winner, loser):
     """
     con = connect()
     cursor = con.cursor()
-
-    query = ("INSERT INTO match (winner, loser) VALUES (%s, %s)", (winner, loser,))
     cursor.execute("INSERT INTO match (winner, loser) VALUES (%s, %s)", (winner, loser,))
     con.commit()
-
     con.close()
 
  
@@ -121,4 +103,18 @@ def swissPairings():
         name2: the second player's name
     """
 
+    con = connect()
+    cursor = con.cursor()
 
+    cursor.execute("select * from standings")
+    results = cursor.fetchall()
+    mylist = []
+    count = len(results)
+
+    for x in range(0, count - 1, 2):
+        test = (results[x][0], results[x][1], results[x + 1][0], results[x + 1][1])
+        mylist.append(test)
+
+    con.close()
+
+    return mylist

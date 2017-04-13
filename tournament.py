@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# 
+# tournament.py -- implementation of a Swiss-system tournament
 import psycopg2
 import bleach
 
@@ -53,7 +56,6 @@ def registerPlayer(name):
     con.commit()
     con.close()
 
-
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
     The first entry in the list should be the player in first place, or a player
@@ -67,10 +69,18 @@ def playerStandings():
     """
     con = connect()
     cursor = con.cursor()
-    query = ("SELECT * FROM standings;")
+    query = "SELECT * FROM standings;"
     cursor.execute(query)
     results = cursor.fetchall()
+    # If the top two results have more than 0 wins AND are equal then reorder them
+    # by total wins divided by total games played
+    if (results[0][2] != 0) and (results[0][2] == results[1][2]):
+        query = "SELECT player_id, player_name, won, played " \
+                "FROM standings ORDER BY (cast(won AS DECIMAL)/played)  DESC;"
+        cursor.execute(query)
+        results = cursor.fetchall()
     con.close()
+
     return results
 
 
@@ -105,16 +115,14 @@ def swissPairings():
 
     con = connect()
     cursor = con.cursor()
-
     cursor.execute("select * from standings")
     results = cursor.fetchall()
-    mylist = []
+    pairings = []
     count = len(results)
 
     for x in range(0, count - 1, 2):
-        test = (results[x][0], results[x][1], results[x + 1][0], results[x + 1][1])
-        mylist.append(test)
+        paired_list = (results[x][0], results[x][1], results[x + 1][0], results[x + 1][1])
+        pairings.append(paired_list)
 
     con.close()
-
-    return mylist
+    return pairings

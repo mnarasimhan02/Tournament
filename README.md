@@ -1,6 +1,4 @@
 # Tournament Results
-https://www.udacity.com/course/viewer#!/c-ud197-nd/  
-Udacity Full Stack developer project 2
 
 ## Project Specification
 
